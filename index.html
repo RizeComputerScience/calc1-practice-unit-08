@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Unit 8 Practice: Related Rates and L'Hopital's Rule</title>
+<title>Unit 8 Practice</title>
 <meta name="description" content="Practice related rates and L'Hopital's Rule with feedback on each line of your work.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2796,7 +2796,7 @@ var selfcheck = (function () {
    ==================================================================================== */
 
 /* ---------------- links ---------------- */
-var PAUL_C = 'https://tutorial.math.lamar.edu/Classes/CalcI/', PAUL_P = 'https://tutorial.math.lamar.edu/Problems/CalcI/';
+var PAUL_C = 'https://tutorial.math.lamar.edu/Classes/CalcI/';
 function paulEx(page, title, ex) { return [PAUL_C + page + '.aspx', 'Paul’s Online Math Notes: ' + title + (ex ? ', ' + ex : '')]; }
 var T_RR = paulEx('RelatedRates', 'Related Rates', 'Example 2');
 var T_CONE = paulEx('RelatedRates', 'Related Rates', 'Example 4');
@@ -2861,7 +2861,7 @@ function coneSVG() {
 
 /* ---------------- the sections ---------------- */
 var SECTIONS_P = [
-  { id: 'sec-rr', title: 'Related Rates', nav: 'Related Rates', lede: 'These go with Paul’s [Related Rates](' + T_RR[0] + '), Examples 1 to 5 and 9, and the five steps in the Unit 8 guide.' },
+  { id: 'sec-rr', title: 'Related Rates', nav: 'Related Rates', lede: 'These go with Paul’s [Related Rates](' + T_RR[0] + '), Examples 1 to 5 and 9, and the five steps in section 1 of Unit 8: Related Rates and L’Hopital’s Rule.' },
   { id: 'sec-form', title: 'Check the Form First', nav: 'Check the Form', lede: 'This goes with the start of Paul’s [L’Hospital’s Rule and Indeterminate Forms](' + T_LH[0] + ').' },
   { id: 'sec-lh', title: 'L’Hopital’s Rule', nav: 'L’Hopital’s Rule', lede: 'These go with Paul’s [L’Hospital’s Rule and Indeterminate Forms](' + T_LH[0] + '), Example 1.' },
   { id: 'sec-other', title: 'Other Indeterminate Forms', nav: 'Other Forms', lede: 'These go with Paul’s [L’Hospital’s Rule and Indeterminate Forms](' + T_LH2[0] + '), Examples 2 and 4.' }
@@ -3245,14 +3245,14 @@ function sectionHTML(s, n) {
   return sec(s.id, String(n + 1), s.title, s.lede) + col(ps.map(function (p) { return blk(p.id, function () { return problemHTML(p); }); }).join(''));
 }
 function backHTML() {
-  return sec('sec-back', '', 'Back to Paul', '') + prose('', [
-    'If one type of problem gave you trouble, rework Paul’s practice problems for it: [Related Rates](' + PAUL_P + 'RelatedRates.aspx) or [L’Hospital’s Rule and Indeterminate Forms](' + PAUL_P + 'LHospitalsRule.aspx). Check the form of each limit before you apply the rule.',
-    'Next, complete Problem Set 6, Parts 1 and 2. Unit 9 begins in Paul’s notes with [Rates of Change](' + PAUL_C + 'RateOfChange.aspx).']);
+  return sec('sec-back', '', 'What Comes Next', '') + prose('', [
+    'If one kind of problem gave you trouble, find the example of that kind in Unit 8 Worked Examples, cover its solution, and work it by hand.',
+    'Next, complete the Unit 8 Problem Set.']);
 }
 function page() {
-  return header('Unit 8 Practice', SECTIONS_P.map(function (s) { return ['#' + s.id, s.nav || s.title]; }).concat([['#sec-back', 'Back to Paul']])) +
-    '<main id="top">' + hero({ kicker: 'Calculus I · Unit 8', title: 'Unit 8 Practice: Related Rates and L’Hopital’s Rule',
-      dek: 'Use this page after the Unit 8 reading and Paul’s practice problems. For each problem, choose the method, then type each line of the work. Each line is checked before the next one opens. Type a power with ⟦^⟧, as in ⟦x^2⟧ or ⟦e^(x/2)⟧, and put a whole top or bottom in parentheses, as in ⟦(x + 1)/(x − 2)⟧.' }) +
+  return header('Unit 8 Practice', SECTIONS_P.map(function (s) { return ['#' + s.id, s.nav || s.title]; }).concat([['#sec-back', 'Next']])) +
+    '<main id="top">' + hero({ kicker: 'Calculus I · Unit 8: Related Rates and L’Hopital’s Rule', title: 'Unit 8 Practice',
+      dek: 'Use this page after you read Unit 8: Related Rates and L’Hopital’s Rule and Unit 8 Worked Examples. For each problem, choose the method, then type each line of the work. Each line is checked before the next one opens. Type a power with ⟦^⟧, as in ⟦x^2⟧ or ⟦e^(x/2)⟧, and put a whole top or bottom in parentheses, as in ⟦(x + 1)/(x − 2)⟧.' }) +
     SECTIONS_P.map(sectionHTML).join('') + backHTML() + '</main>';
 }
 expose({ PROBLEMS: PROBLEMS, problemHTML: problemHTML, formProblem: formProblem, stepDone: stepDone });
