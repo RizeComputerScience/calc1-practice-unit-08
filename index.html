@@ -2771,6 +2771,10 @@ var selfcheck = (function () {
    around an exponent (EXP_MSG, added in this page's novice read; parenSlips skips an exponent's parentheses, so e^2/x/x^2
    gets EXP_MSG), and the hero keeps the typing sentence.
 
+   More Practice (2026-11-10, clarity rebuild): section 5, Problems 9 to 17 (ids m1 to m9), optional, built with this
+   builder unchanged. It adds five drawn setups (ladderSVG, elevatorSVG, drainConeSVG, shadowSVG, angleSVG) and one guard,
+   FORM.noNest (Problem 16's simplified quotient).
+
    ================================ THE PROBLEM OBJECT ================================
    {
      id:    'p2',                       // unique, short. The card is #ex-p2, its block is #blk-p2, its closing figure
@@ -2804,9 +2808,13 @@ var T_RES = paulEx('RelatedRates', 'Related Rates', 'Example 9');
 var T_LH = paulEx('LHospitalsRule', 'L’Hospital’s Rule and Indeterminate Forms', 'Example 1');
 var T_LH2 = paulEx('LHospitalsRule', 'L’Hospital’s Rule and Indeterminate Forms', 'Example 2');
 var T_LH4 = paulEx('LHospitalsRule', 'L’Hospital’s Rule and Indeterminate Forms', 'Example 4');
+/* More Practice: two more examples on the same Paul page */
+var T_ANGLE = paulEx('RelatedRates', 'Related Rates', 'Example 3');
+var T_SHADOW = paulEx('RelatedRates', 'Related Rates', 'Example 6');
 
 /* typed text answers for infinite limits */
 var INF = ['infinity', '∞', '+infinity', '+∞', 'inf', 'positive infinity'];
+var NEGINF = ['-infinity', '−infinity', '-∞', '−∞', '-inf', 'negative infinity'];
 
 /* ---------------- form guards (see the problem object above) ---------------- */
 var FORM = {
@@ -2821,6 +2829,13 @@ var FORM = {
       if (/\/|sqrt|√|\)\^|\)\(|[0-9a-z.]\(/.test(arg)) return 'That is equal, but the exponent is still inside the logarithm. Use `ln(A^n) = n ln A` to bring it down in front.';
     }
     return null;
+  },
+  /* More Practice, Problem 16: the simplified quotient has a value at x = 0; a fraction still inside a fraction, or an
+     uncancelled power of x, does not (1/0 or 0/0 there) */
+  noNest: function (raw) {
+    var s = String(raw), c = mk.compile(s.indexOf('=') >= 0 ? s.slice(s.lastIndexOf('=') + 1) : s, { v: 'x' });
+    if (!c.f || isFinite(c.f(0))) return null;
+    return 'That is equal, but it is not simplified yet. Multiply the top by the reciprocal of the bottom, then combine the powers of `x` into one.';
   }
 };
 
@@ -2858,13 +2873,79 @@ function coneSVG() {
   g += arrowSVG(ax + wW + 26, wY - 22, ax + wW + 26, wY + 16, 'rate');
   return g + '</svg>';
 }
+/* More Practice setups (Problems 9 to 13), drawn the same way */
+function rightMark(x, y, dx, dy) { return '<path d="M' + (x + dx) + ' ' + y + ' L' + (x + dx) + ' ' + (y + dy) + ' L' + x + ' ' + (y + dy) + '" style="fill:none;stroke:var(--muted);stroke-width:1.5"/>'; }
+function ladderSVG() {
+  var wx = 70, gy = 206, S = 11, ty = gy - 15 * S, bx = wx + 8 * S;
+  var g = '<svg viewBox="0 0 340 240" role="img" aria-label="A 17 ft ladder leans against a wall. Its bottom, at distance x from the wall, slides away from the wall at 2 ft/s. Its top is at height y on the wall. The wall, the ground and the ladder form a right triangle with the ladder as the hypotenuse.">';
+  g += lineSVG(20, gy, 330, gy, 'muted', 2) + lineSVG(wx, 14, wx, gy, 'muted', 5);
+  g += lineSVG(wx, ty, wx, gy, 'outside', 3) + lineSVG(wx, gy, bx, gy, 'inside', 3) + rightMark(wx, gy, 14, -14);
+  g += lineSVG(bx, gy, wx, ty, 'ink', 4);
+  g += arrowSVG(bx + 16, gy - 16, bx + 64, gy - 16, 'rate') + labSVG(bx + 40, gy - 28, '2 ft/s', 'rate');
+  g += labSVG(wx + (bx - wx) / 2 + 16, ty + (gy - ty) / 2 - 6, '17 ft', 'ink', 'start');
+  g += labSVG(wx - 14, (ty + gy) / 2 + 6, it('y'), 'outside', 'end') + labSVG((wx + bx) / 2, gy + 24, it('x'), 'inside');
+  return g + '</svg>';
+}
+function elevatorSVG() {
+  var ex = 86, gy = 214, ry = 84, wx = 236;
+  var g = '<svg viewBox="0 0 340 248" role="img" aria-label="Not to scale. An elevator shaft rises from the ground. One person rides the elevator up at 7 ft/s and is at height y. The other walks along the ground away from the shaft at 2 ft/s and is at distance x from it. The distance z between them is the hypotenuse of a right triangle with legs x and y.">';
+  g += lineSVG(20, gy, 330, gy, 'muted', 2) + '<path d="M' + (ex - 24) + ' ' + gy + ' L' + (ex - 24) + ' 14 L' + ex + ' 14 L' + ex + ' ' + gy + '" style="fill:none;stroke:var(--muted);stroke-width:1.5"/>';
+  g += lineSVG(ex, ry, ex, gy, 'outside', 3) + lineSVG(ex, gy, wx, gy, 'inside', 3) + rightMark(ex, gy, 14, -14);
+  g += lineSVG(ex, ry, wx, gy - 8, 'ink', 2, '7 5');
+  g += '<rect x="' + (ex - 22) + '" y="' + (ry - 14) + '" width="20" height="28" style="fill:var(--line);stroke:var(--ink);stroke-width:1.5"/>';
+  g += '<circle cx="' + wx + '" cy="' + (gy - 8) + '" r="7" style="fill:var(--ink)"/><circle cx="' + ex + '" cy="' + ry + '" r="4" style="fill:var(--ink)"/>';
+  g += arrowSVG(ex - 12, ry - 20, ex - 12, ry - 62, 'rate') + labSVG(ex + 8, ry - 40, '7 ft/s', 'rate', 'start');
+  g += arrowSVG(wx + 16, gy - 22, wx + 62, gy - 22, 'rate') + labSVG(wx + 40, gy - 34, '2 ft/s', 'rate');
+  g += labSVG(ex + 10, (ry + gy) / 2 + 20, it('y'), 'outside', 'start') + labSVG((ex + wx) / 2, gy + 24, it('x'), 'inside') + labSVG((ex + wx) / 2 + 12, (ry + gy) / 2 - 12, it('z'), 'ink', 'start');
+  return g + '</svg>';
+}
+function drainConeSVG() {
+  var ax = 150, ay = 236, S = 24, topY = ay - 8 * S, topW = 4 * S, wY = ay - 4 * S, wW = 2 * S;
+  var g = '<svg viewBox="0 0 320 262" role="img" aria-label="Front view of a cone-shaped tank, point down, 8 ft deep with a top radius of 4 ft. Water fills it to a depth h, where the water surface has radius r. The water level drops as water drains out.">';
+  g += '<path d="M' + (ax - wW) + ' ' + wY + ' L' + (ax + wW) + ' ' + wY + ' L' + ax + ' ' + ay + ' Z" style="fill:var(--inside-tint)"/>';
+  g += '<path d="M' + (ax - topW) + ' ' + topY + ' L' + (ax + topW) + ' ' + topY + ' L' + ax + ' ' + ay + ' Z" style="fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round"/>';
+  g += lineSVG(ax, topY, ax + topW, topY, 'ink', 3) + lineSVG(ax, topY, ax, ay, 'muted', 1.5, '6 5');
+  g += lineSVG(ax - wW, wY, ax + wW, wY, 'inside', 3) + lineSVG(ax, wY, ax + wW, wY, 'inside', 4);
+  g += lineSVG(ax + topW + 20, topY, ax + topW + 20, ay, 'muted', 1.5) + lineSVG(ax + topW + 14, topY, ax + topW + 26, topY, 'muted', 1.5) + lineSVG(ax + topW + 14, ay, ax + topW + 26, ay, 'muted', 1.5);
+  g += lineSVG(ax - topW - 18, wY, ax - topW - 18, ay, 'inside', 1.5) + lineSVG(ax - topW - 24, wY, ax - topW - 12, wY, 'inside', 1.5) + lineSVG(ax - topW - 24, ay, ax - topW - 12, ay, 'inside', 1.5);
+  g += labSVG(ax + topW / 2, topY - 10, '4 ft', 'ink') + labSVG(ax + topW + 30, (topY + ay) / 2 + 6, '8 ft', 'ink', 'start');
+  g += labSVG(ax + wW / 2, wY - 10, it('r'), 'inside') + labSVG(ax - topW - 28, (wY + ay) / 2 + 6, it('h'), 'inside', 'end');
+  g += arrowSVG(ax + wW + 26, wY - 22, ax + wW + 26, wY + 16, 'rate');
+  return g + '</svg>';
+}
+function shadowSVG() {
+  var wx = 34, gy = 190, S = 17, ly = gy - 5 * S, px = wx + 8 * S, hy = gy - 2 * S, tx = wx + 40 / 3 * S;
+  var g = '<svg viewBox="0 0 320 262" role="img" aria-label="A light on a wall, 5 m above the ground. A person 2 m tall stands at distance p from the wall and walks toward it at 0.5 m/s. A line from the light past the top of the person’s head reaches the ground at the tip of the shadow, at distance s from the wall. The shadow runs along the ground from the person to the tip, so its length is s minus p.">';
+  g += lineSVG(14, gy, 310, gy, 'muted', 2) + lineSVG(wx, 30, wx, gy, 'muted', 5);
+  g += lineSVG(wx, ly, tx, gy, 'muted', 1.5, '6 5') + '<circle cx="' + (wx + 6) + '" cy="' + ly + '" r="6" style="fill:var(--rate)"/>';
+  g += lineSVG(px, gy, tx, gy, 'ink', 5) + lineSVG(px, gy, px, hy + 4, 'ink', 4) + '<circle cx="' + px + '" cy="' + hy + '" r="4" style="fill:var(--ink)"/>';
+  g += arrowSVG(px + 2, gy - 70, px - 44, gy - 70, 'rate') + labSVG(px - 21, gy - 80, '0.5 m/s', 'rate');
+  g += labSVG(wx + 10, (ly + gy) / 2 + 6, '5 m', 'ink', 'start') + labSVG(px - 8, gy - 8, '2 m', 'ink', 'end');
+  g += lineSVG(wx, gy + 14, px, gy + 14, 'inside', 1.5) + lineSVG(px, gy + 8, px, gy + 20, 'inside', 1.5) + labSVG((wx + px) / 2, gy + 34, it('p'), 'inside');
+  g += lineSVG(wx, gy + 44, tx, gy + 44, 'outside', 1.5) + lineSVG(tx, gy + 38, tx, gy + 50, 'outside', 1.5) + labSVG((wx + tx) / 2, gy + 64, it('s'), 'outside');
+  return g + '</svg>';
+}
+function angleSVG() {
+  var bx = 96, gy = 230, cy = 92, ox = 290, a = Math.atan2(gy - cy, ox - bx), R = 42;
+  var g = '<svg viewBox="0 0 340 262" role="img" aria-label="Not to scale. A building with a glass elevator on its outside wall, at height h above the ground. You stand on the ground 50 m from the base of the building. The line of sight from you to the elevator makes the angle theta with the ground.">';
+  g += lineSVG(14, gy, 330, gy, 'muted', 2) + '<path d="M40 ' + gy + ' L40 18 L' + bx + ' 18 L' + bx + ' ' + gy + '" style="fill:none;stroke:var(--muted);stroke-width:1.5"/>';
+  g += lineSVG(bx, cy, bx, gy, 'outside', 3) + lineSVG(bx, gy, ox, gy, 'ink', 2) + rightMark(bx, gy, 14, -14);
+  g += lineSVG(ox, gy, bx + 4, cy, 'muted', 1.5, '6 5');
+  g += '<rect x="' + bx + '" y="' + (cy - 14) + '" width="16" height="28" style="fill:var(--line);stroke:var(--ink);stroke-width:1.5"/>';
+  g += arrowSVG(bx + 30, cy + 8, bx + 30, cy - 34, 'rate');
+  g += '<path d="M' + r1(ox - R) + ' ' + gy + ' A' + R + ' ' + R + ' 0 0 1 ' + r1(ox - R * Math.cos(a)) + ' ' + r1(gy - R * Math.sin(a)) + '" style="fill:none;stroke:var(--inside);stroke-width:2"/>';
+  g += labSVG(ox - R - 16, gy - 10, it('θ'), 'inside', 'end') + '<circle cx="' + ox + '" cy="' + (gy - 8) + '" r="7" style="fill:var(--ink)"/>';
+  g += labSVG(bx - 12, (cy + gy) / 2 + 6, it('h'), 'outside', 'end') + labSVG((bx + ox) / 2, gy + 24, '50 m', 'ink');
+  return g + '</svg>';
+}
 
 /* ---------------- the sections ---------------- */
 var SECTIONS_P = [
   { id: 'sec-rr', title: 'Related Rates', nav: 'Related Rates', lede: 'These go with Paul’s [Related Rates](' + T_RR[0] + '), Examples 1 to 5 and 9, and the five steps in section 1 of Unit 8: Related Rates and L’Hopital’s Rule.' },
   { id: 'sec-form', title: 'Check the Form First', nav: 'Check the Form', lede: 'This goes with the start of Paul’s [L’Hospital’s Rule and Indeterminate Forms](' + T_LH[0] + ').' },
   { id: 'sec-lh', title: 'L’Hopital’s Rule', nav: 'L’Hopital’s Rule', lede: 'These go with Paul’s [L’Hospital’s Rule and Indeterminate Forms](' + T_LH[0] + '), Example 1.' },
-  { id: 'sec-other', title: 'Other Indeterminate Forms', nav: 'Other Forms', lede: 'These go with Paul’s [L’Hospital’s Rule and Indeterminate Forms](' + T_LH2[0] + '), Examples 2 and 4.' }
+  { id: 'sec-other', title: 'Other Indeterminate Forms', nav: 'Other Forms', lede: 'These go with Paul’s [L’Hospital’s Rule and Indeterminate Forms](' + T_LH2[0] + '), Examples 2 and 4.' },
+  { id: 'sec-more', title: 'More Practice (Only If You Want It)', nav: 'More', lede: 'Nothing in this section is required. If a kind of problem above took you more than one try, the problem of the same kind here gives you another go: Problems 9 to 13 for related rates (a ladder, two people moving apart, a cone, a shadow and an angle), Problem 14 for checking the form and for `F{0}{0}`, Problem 15 for `F{∞}{∞}`, and Problems 16 and 17 for the other indeterminate forms. The Unit 8 Problem Set comes next either way.' }
 ];
 
 /* ---------------- the problems ---------------- */
@@ -3089,7 +3170,320 @@ var PROBLEMS = [
     graph: { x: [0, 1], y: [0, 450], ticks: { x: 0.2, y: 100 }, fns: [{ f: function (x) { return Math.pow(1 + 3 * x, 2 / x); }, domain: [0.002, 1] }],
       dots: [{ x: 0, y: Math.exp(6), open: true, label: '(0, 403.4)', at: 'ne' }],
       aria: 'The graph of (1 + 3x) to the power 2/x for x from 0 to 1: it falls from about 403 near x = 0 to 16 at x = 1. An open circle at (0, 403) marks the limit e to the 6.' },
-    after: 'As `x → 0^+`, the graph rises toward `e^6 ≈ 403.4`.' }
+    after: 'As `x → 0^+`, the graph rises toward `e^6 ≈ 403.4`.' },
+
+  /* ================= More Practice (optional), added 2026-11-10 by the clarity rebuild =================
+     From the practice twins removed from Unit 8 Worked Examples (plan/clarity-rebuild/twins/unit-08.md: 8.2, 8.4, 8.5,
+     8.7, 8.8, 8.9) and three value-add Paul problems (plan/clarity-rebuild/units/unit-08/value-add.md: Related Rates 7
+     and 9, L'Hospital's Rule 11). Ids m1 to m9, shown as Problems 9 to 17. Every key and wrong answer: SPEC.md, "More
+     Practice", and tests/check_math.py. */
+
+  /* 9. (twin 8.2) a right triangle with a fixed hypotenuse: the sliding ladder */
+  { id: 'm1', sec: 'sec-more', task: 'A 17 ft ladder leans against a wall. Its bottom slides away from the wall at 2 ft per second. How fast is the top of the ladder moving when the bottom is 8 ft from the wall? Is the top moving up or down?',
+    board: 'y′ "when" x = 8', pic: ladderSVG, teach: T_RR,
+    steps: [
+      { lead: 'Which quantities change with time?', ok: 0, pick: [
+        ['The distance `x` from the wall to the bottom and the height `y` of the top', 'The ladder’s length stays 17 ft, so it is labeled with its value; `x` and `y` change, so they get letters.'],
+        ['`x`, `y` and the ladder’s length', 'The ladder does not stretch: its length is fixed at 17 ft. Label a fixed quantity with its value, not a letter.'],
+        ['Only `x`', 'As the bottom slides out, the top slides down the wall, so the height `y` changes too.']] },
+      { lead: 'Write the known rate, with its sign.', ask: 'x′ =', num: true, ans: '2', units: 'ft/s', unitAlts: ['feet per second', 'ft/sec'],
+        wrongs: [['-2', 'The bottom slides away from the wall, so `x` grows and `x′` is positive.']],
+        hints: ['Is the distance from the wall to the bottom getting larger or smaller?'] },
+      { lead: 'Which equation relates `x` and `y`?', ok: 0, pick: [
+        ['`x^2 + y^2 = 17^2`', 'The wall, the ground and the ladder form a right triangle, with the ladder as the hypotenuse.'],
+        ['`x + y = 17`', 'The legs of a right triangle do not add to the hypotenuse. Use the Pythagorean theorem.', ['#ex-p1', 'See Problem 1']],
+        ['`x^2 + 17^2 = y^2`', 'The ladder is the hypotenuse, the side opposite the right angle, so `17^2` stands alone.']] },
+      { lead: 'Find `y` at the instant when `x = 8`.', ask: 'y =', num: true, ans: '15', units: 'ft', unitAlts: ['feet'],
+        wrongs: [['9', '`17 − 8` subtracts the sides. Use `y^2 = 17^2 − 8^2`.'],
+          ['18.79', 'The ladder is the longest side, so `y^2 = 289 − 64`, not `289 + 64`.']],
+        hints: ['Put `x = 8` into `x^2 + y^2 = 289` and solve for `y`.'] },
+      { lead: 'Differentiate `x^2 + y^2 = 17^2` with respect to `t`.', ok: 0, pick: [
+        ['`2x x′ + 2y y′ = 0`', 'Each changing quantity gets its own rate by the chain rule, and the constant `17^2` has derivative 0.'],
+        ['`2x x′ + 2y y′ = 34`', '`17^2 = 289` is a constant, so its derivative is 0.'],
+        ['`2x + 2y = 0`', 'By the chain rule, the derivative of `x^2` with respect to `t` is `2x x′`. Each term needs its rate.']] },
+      { lead: 'Put in the values and solve for `y′`.', ask: 'y′ =', num: true, ans: '-16/15', units: 'ft/s', unitAlts: ['feet per second', 'ft/sec'],
+        wrongs: [['16/15', '`2(8)(2) + 2(15)y′ = 0` gives `30y′ = −32`. Move the 32 across, and the sign changes.'],
+          ['-2', 'The top does not move at the bottom’s speed. Solve `2(8)(2) + 2(15)y′ = 0` for `y′`.'],
+          [['-16/9', '-1.78'], 'Use `y = 15`, from `y^2 = 289 − 64`, not `17 − 8 = 9`.'],
+          [['-15/16', '-0.9375', '-0.94'], '`30y′ = −32` gives `y′ = F{−32}{30}`, not `F{30}{−32}`.']],
+        hints: ['Put `x = 8`, `x′ = 2` and `y = 15` into `2x x′ + 2y y′ = 0`.'] },
+      { lead: 'Which sentence states the answer?', ok: 0, pick: [
+        ['The top slides down the wall at about 1.07 ft/s.', '`y′ = −F{16}{15} ≈ −1.07`. It is negative, so the height shrinks.'],
+        ['The top slides up the wall at about 1.07 ft/s.', '`y′` is negative, so the height of the top is shrinking.'],
+        ['The top slides down at 2 ft/s, the same speed as the bottom.', 'The two ends move at different speeds. Here `y′ = −F{16}{15}`, about 1.07 ft/s.']] }] },
+
+  /* 10. (value-add: Paul, Related Rates, Problem 7) a right triangle with both legs changing */
+  { id: 'm2', sec: 'sec-more', task: 'Two people stand at an elevator. At the same moment, one starts walking away from the elevator at 2 ft per second and the other starts riding the elevator up at 7 ft per second. How fast is the distance between them changing 15 seconds later?',
+    board: 'z′ "when" t = 15', pic: elevatorSVG, teach: T_RR,
+    steps: [
+      { lead: 'Which quantities change with time?', ok: 0, pick: [
+        ['The walker’s distance `x`, the rider’s height `y` and the distance `z` between them', 'Both people move, so both legs of the triangle change, and so does the side `z` joining them.'],
+        ['`x` and `z`, with the height fixed as in Problem 1', 'In Problem 1 the height was fixed. Here the rider goes up, so the height `y` changes too.', ['#ex-p1', 'See Problem 1']],
+        ['Only `z`', 'The walker moves away and the rider moves up, so `x` and `y` change as well.']] },
+      { lead: 'Find `x`, the walker’s distance from the elevator, after 15 seconds.', ask: 'x =', num: true, ans: '30', units: 'ft', unitAlts: ['feet'],
+        wrongs: [['2', 'That is the walker’s rate. In 15 seconds at 2 ft per second, the walker covers `2 · 15` feet.']],
+        hints: ['Distance is rate times time.'] },
+      { lead: 'Find `y`, the rider’s height, after 15 seconds.', ask: 'y =', num: true, ans: '105', units: 'ft', unitAlts: ['feet'],
+        wrongs: [['7', 'That is the rider’s rate. In 15 seconds at 7 ft per second, the rider rises `7 · 15` feet.']],
+        hints: ['Distance is rate times time.'] },
+      { lead: 'Find `z` at that instant. Use a calculator for the root.', ask: 'z =', num: true, ans: '15sqrt(53)', units: 'ft', unitAlts: ['feet'],
+        wrongs: [['135', 'The legs of a right triangle do not add to the hypotenuse: `z^2 = 30^2 + 105^2`.'],
+          [['15sqrt(45)', '100.6', '100.62'], '`z` is the hypotenuse, so add the squares: `z^2 = 30^2 + 105^2`, not `105^2 − 30^2`.']],
+        hints: ['`z^2 = x^2 + y^2 = 30^2 + 105^2`.'],
+        why: 'That is about 109.2 ft.' },
+      { lead: 'Differentiate `x^2 + y^2 = z^2` with respect to `t`.', ok: 0, pick: [
+        ['`2x x′ + 2y y′ = 2z z′`', 'All three sides change, so each term gets its own rate by the chain rule.'],
+        ['`2x x′ = 2z z′`', 'That is Problem 1’s equation, where the height was fixed. Here `y` changes, so `y^2` gives `2y y′`.'],
+        ['`x′ + y′ = z′`', 'The rates do not add, just as the sides do not. Differentiate the Pythagorean theorem term by term.']] },
+      { lead: 'Put in the values and solve for `z′`. Use a calculator.', ask: 'z′ =', num: true, ans: 'sqrt(53)', tol: 0.006, units: 'ft/s', unitAlts: ['feet per second', 'ft/sec'],
+        wrongs: [['9', 'The two people move at right angles, so their speeds do not add. Solve `2(30)(2) + 2(105)(7) = 2z z′` with `z ≈ 109.2`.'],
+          ['7', 'That is the rider’s speed. The distance between them changes at its own rate: solve `2x x′ + 2y y′ = 2z z′` for `z′`.'],
+          ['0.55', 'Keep the `2y y′` term: the rider moves too, and `2(105)(7) = 1470`.'],
+          ['6.73', 'Keep the `2x x′` term: the walker moves too, and `2(30)(2) = 120`.']],
+        hints: ['Put `x = 30`, `x′ = 2`, `y = 105`, `y′ = 7` and `z = 15sqrt(53) ≈ 109.2` into `2x x′ + 2y y′ = 2z z′`.'],
+        why: '`z′ = sqrt(53) ≈ 7.28` ft/s, the same at every moment: both people started together, so `z = sqrt(53) t`.' },
+      { lead: 'Which sentence states the answer?', ok: 0, pick: [
+        ['The distance between them is increasing at about 7.28 ft/s.', '`z′ ≈ 7.28` is positive, so the distance is growing.'],
+        ['The distance between them is increasing at 9 ft/s, the sum of their speeds.', 'They move at right angles, so their speeds do not add. `z′ ≈ 7.28` ft/s.'],
+        ['The distance between them is decreasing at about 7.28 ft/s.', '`z′` is positive, so the distance is growing.']] }] },
+
+  /* 11. (twin 8.5) similar triangles: a draining cone, with the surface radius's rate */
+  { id: 'm3', sec: 'sec-more', task: 'Water drains from a tank shaped like a cone, point down. The tank is 8 ft deep and its top has radius 4 ft. Water leaves at 2 ft³ per minute. How fast is the depth of the water changing when the water is 2 ft deep? How fast is the radius of the water’s surface changing at that moment?',
+    board: 'h′ "and" r′ "when" h = 2', pic: drainConeSVG, v: 'h', teach: T_CONE,
+    steps: [
+      { lead: 'Write the known rate, with its sign.', ask: 'V′ =', num: true, ans: '-2', units: 'ft³/min', unitAlts: ['ft^3/min', 'cubic feet per minute'],
+        wrongs: [['2', 'The water drains, so the volume decreases and `V′` is negative.']],
+        hints: ['Is the volume of water getting larger or smaller?'] },
+      { lead: 'Use similar triangles to write `r` in terms of `h`.', ask: 'r =', ans: 'h/2',
+        wrongs: [['2h', 'That is upside down. `F{r}{h} = F{4}{8}`, so `r = F{4}{8}h`.', ['#ex-p2', 'See Problem 2']],
+          ['4', '`r` is the radius of the water’s surface, which changes with `h`. Only the tank’s top radius is 4.']],
+        hints: ['The water’s cone and the tank have the same shape, so `F{r}{h} = F{4}{8}`. Solve for `r`.'] },
+      { lead: 'Put `r = F{h}{2}` into `V = F{1}{3}pi r^2 h`.', ask: 'V =', ans: 'pi h^3/12',
+        wrongs: [['pi h^3/4', 'Keep the `F{1}{3}`: `F{1}{3}pi (F{h}{2})^2 h = F{pi h^3}{12}`.'],
+          ['pi h^2/6', 'Square the whole radius: `(F{h}{2})^2 = F{h^2}{4}`.']],
+        hints: ['`(F{h}{2})^2 = F{h^2}{4}`. Multiply by `F{1}{3}pi h`.'],
+        why: 'Now `V` depends on `h` alone.' },
+      { lead: 'Differentiate `V = F{pi}{12}h^3` with respect to `t`.', ok: 0, pick: [
+        ['`V′ = F{pi}{4}h^2 h′`', 'The power rule gives `F{3pi}{12}h^2 = F{pi}{4}h^2`, and the chain rule adds `h′`.'],
+        ['`V′ = F{pi}{4}h^2`', 'Because `h` changes with time, the chain rule adds a factor of `h′`.'],
+        ['`V′ = F{pi}{12}h^3 h′`', 'Differentiate `h^3` too: its derivative with respect to `t` is `3h^2 h′`.']] },
+      { lead: 'Put in `V′ = −2` and `h = 2`, then solve for `h′`.', ask: 'h′ =', num: true, ans: '-2/pi', units: 'ft/min', unitAlts: ['feet per minute'],
+        wrongs: [['2/pi', 'The volume is falling, so `h′` is negative.'],
+          ['-8/pi', 'Square `h = 2` and multiply: `F{pi}{4} · 4 = pi`, so `−2 = pi h′`.']],
+        hints: ['With `h = 2`, the equation is `−2 = F{pi}{4} · 4 h′ = pi h′`.'],
+        why: '`h′ = −F{2}{pi} ≈ −0.637` ft/min.' },
+      { lead: 'Differentiate `r = F{h}{2}` with respect to `t`, and find `r′`.', ask: 'r′ =', num: true, ans: '-1/pi', units: 'ft/min', unitAlts: ['feet per minute'], teach: T_CONE,
+        wrongs: [['0', 'The surface radius shrinks as the water drops. Only the tank’s top radius stays 4 ft. Differentiate `r = F{h}{2}`.'],
+          ['-4/pi', 'That is `2h′`, from `r = 2h`, which is upside down. `r = F{h}{2}` gives `r′ = F{1}{2}h′`.'],
+          ['1/pi', '`h′` is negative, so `r′ = F{1}{2}h′` is negative too.']],
+        hints: ['`r′ = F{1}{2}h′`, with `h′ = −F{2}{pi}`.'] },
+      { lead: 'Which sentence states the answers?', ok: 0, pick: [
+        ['The depth falls at about 0.637 ft/min and the surface radius shrinks at about 0.318 ft/min.', 'Both rates are negative: as the water drains, the level drops and the surface gets smaller.'],
+        ['The depth falls at about 0.637 ft/min and the surface radius stays 4 ft.', 'The tank’s top radius is 4 ft, but the water’s surface shrinks as the level drops: `r′ ≈ −0.318` ft/min.'],
+        ['The depth falls at about 0.637 ft³ per minute.', 'Cubic feet per minute are the units of `V′`. A depth changes in ft/min.']] }] },
+
+  /* 12. (value-add: Paul, Related Rates, Problem 9) a shadow cast by a light on a wall */
+  { id: 'm4', sec: 'sec-more', task: 'A light is mounted on a wall 5 m above the ground. A person 2 m tall starts 10 m from the wall and walks toward it at 0.5 m per second. Let `p` be the person’s distance from the wall and `s` the distance from the wall to the tip of the person’s shadow. After 4 seconds, is the tip of the shadow moving toward or away from the wall? Toward or away from the person?',
+    board: 's′ "and" (s − p)′ "when" t = 4', pic: shadowSVG, v: 'p', teach: T_SHADOW,
+    steps: [
+      { lead: 'Write the known rate, with its sign.', ask: 'p′ =', num: true, ans: '-0.5', units: 'm/s', unitAlts: ['meters per second', 'm/sec'],
+        wrongs: [['0.5', 'The person walks toward the wall, so `p` shrinks and `p′` is negative.']],
+        hints: ['Is the person’s distance from the wall getting larger or smaller?'] },
+      { lead: 'Find `p` after 4 seconds.', ask: 'p =', num: true, ans: '8', units: 'm', unitAlts: ['meters'],
+        wrongs: [['2', 'That is how far the person walked, `0.5 · 4`. Subtract it from the starting 10 m.'],
+          ['12', 'The person walks toward the wall, so the distance shrinks: `10 − 0.5 · 4`.']],
+        hints: ['The person starts 10 m away and walks 0.5 m each second toward the wall.'] },
+      { lead: 'The light, the top of the person’s head and the tip of the shadow lie on one line. Which equation do the similar triangles give?', ok: 0, pick: [
+        ['`F{5}{s} = F{2}{s − p}`', 'The big triangle has the wall’s 5 m over the base `s`. The small one has the person’s 2 m over the shadow, `s − p`, the part of the ground from the person to the tip.'],
+        ['`F{5}{s} = F{2}{p}`', 'The small triangle’s base is the shadow, from the person to the tip: `s − p`, not `p`.'],
+        ['`F{5}{p} = F{2}{s}`', 'The big triangle runs from the wall to the tip of the shadow, so its base is `s`. The small one’s base is the shadow, `s − p`.']] },
+      { lead: 'Solve `F{5}{s} = F{2}{s − p}` for `s`.', ask: 's =', ans: '5p/3',
+        wrongs: [['3p/5', 'That is upside down. Cross-multiply: `5(s − p) = 2s`, so `3s = 5p`.'],
+          ['5p/7', 'Check the signs: `5(s − p) = 2s` gives `5s − 2s = 5p`, so `3s = 5p`.']],
+        hints: ['Cross-multiply to get `5(s − p) = 2s`, then gather the `s` terms on one side.'] },
+      { lead: 'Differentiate `s = F{5}{3}p` with respect to `t`, and find `s′`.', ask: 's′ =', num: true, ans: '-5/6', units: 'm/s', unitAlts: ['meters per second', 'm/sec'],
+        wrongs: [['5/6', 'The person walks toward the wall, so `p′ = −0.5` and `s′ = F{5}{3}(−0.5)` is negative.'],
+          ['-0.5', 'That is the person’s rate. The tip moves at `s′ = F{5}{3}p′`.'],
+          ['-0.3', 'That is `F{3}{5}p′`, from an upside-down `s`. Use `s = F{5}{3}p`.']],
+        hints: ['`s′ = F{5}{3}p′`, with `p′ = −0.5`.'],
+        why: '`s′ = F{5}{3}p′` holds at every moment, so the answer does not use `p = 8`, as in Paul’s Example 6.' },
+      { lead: 'Is the tip of the shadow moving toward or away from the wall?', ok: 0, pick: [
+        ['Toward the wall, because `s′` is negative', '`s` is the tip’s distance from the wall, and it is shrinking.'],
+        ['Away from the wall, because the shadow falls behind the person', 'The shadow is behind the person, but the tip’s distance from the wall, `s`, is shrinking: `s′ < 0`.'],
+        ['Neither, because the light does not move', 'The light is fixed, but the person moves, and the shadow moves with them: `s′ = −F{5}{6}`.']] },
+      { lead: 'The tip’s distance from the person is the shadow’s length, `s − p`. Find its rate, `s′ − p′`.', ask: 's′ − p′ =', num: true, ans: '-1/3', units: 'm/s', unitAlts: ['meters per second', 'm/sec'],
+        wrongs: [['-4/3', 'That adds the rates. Subtract: `−F{5}{6} − (−0.5) = −F{5}{6} + F{1}{2}`.'],
+          ['1/3', 'That is `p′ − s′`. The shadow’s length is `s − p`, so its rate is `s′ − p′`.']],
+        hints: ['`s′ − p′ = −F{5}{6} − (−F{1}{2})`.'] },
+      { lead: 'Is the tip of the shadow moving toward or away from the person?', ok: 0, pick: [
+        ['Toward the person, because the shadow is getting shorter', '`s′ − p′ = −F{1}{3}`, so the gap between the person and the tip is closing.'],
+        ['Away from the person, because the tip moves faster than the person', 'The tip moves faster, but in the same direction, toward the wall, so it catches up: the shadow shrinks.'],
+        ['Neither: the shadow keeps the same length', 'The length changes at `s′ − p′ = −F{1}{3}` m/s, so the shadow is getting shorter.']] }] },
+
+  /* 13. (twin 8.4) an angle of elevation: find the height's rate from the angle's */
+  { id: 'm5', sec: 'sec-more', task: 'A glass elevator rises up the outside of a building. You stand on the ground 50 m from the base of the building. Let `θ` be the angle of elevation from you to the elevator. When `θ = F{pi}{3}`, it is increasing at 0.02 radians per second. How fast is the elevator rising?',
+    board: 'h′ "when" θ = F{pi}{3}', pic: angleSVG, teach: T_ANGLE,
+    steps: [
+      { lead: 'Which equation links `θ` and the elevator’s height `h`?', ok: 0, pick: [
+        ['`tan θ = F{h}{50}`', '`h` is opposite `θ` and the 50 m is adjacent, so the tangent links them.'],
+        ['`sin θ = F{h}{50}`', 'The 50 m along the ground is adjacent to `θ`, not the hypotenuse. Opposite over adjacent is the tangent.'],
+        ['`tan θ = F{50}{h}`', 'That is upside down. The tangent is opposite over adjacent, and `h` is opposite `θ`.']] },
+      { lead: 'Differentiate `tan θ = F{h}{50}` with respect to `t`.', ok: 0, pick: [
+        ['`sec^2 θ · θ′ = F{h′}{50}`', 'The derivative of `tan θ` is `sec^2 θ`, and the chain rule adds `θ′`, because `θ` changes with time.'],
+        ['`sec^2 θ = F{h′}{50}`', '`θ` changes with time, so the chain rule adds a factor of `θ′`.'],
+        ['`sec θ tan θ · θ′ = F{h′}{50}`', 'That is the derivative of `sec θ`. The derivative of `tan θ` is `sec^2 θ`.']] },
+      { lead: 'Find `sec^2 θ` at `θ = F{pi}{3}`.', ask: 'sec^2(F{pi}{3}) =', num: true, ans: '4',
+        wrongs: [['2', 'That is `sec(F{pi}{3})`. Square it.'],
+          ['0.25', 'That is `cos^2(F{pi}{3})`. The secant is its reciprocal: `sec θ = F{1}{cos θ}`.'],
+          [['1', '1.0003'], 'That comes from a calculator in degree mode. `F{pi}{3}` is in radians: `cos(F{pi}{3}) = F{1}{2}`.']],
+        hints: ['`cos(F{pi}{3}) = F{1}{2}`, and `sec θ = F{1}{cos θ}`.'] },
+      { lead: 'Put in the values and solve for `h′`.', ask: 'h′ =', num: true, ans: '4', units: 'm/s', unitAlts: ['meters per second', 'm/sec'],
+        wrongs: [['1', 'Keep the factor `sec^2 θ = 4`: `4(0.02) = F{h′}{50}`.'],
+          ['2', 'Use `sec^2 θ = 4`, not `sec θ = 2`.'],
+          ['0.0016', 'Multiply both sides by 50 to solve for `h′`: `h′ = 50 · 4 · 0.02`.']],
+        hints: ['Put `sec^2 θ = 4` and `θ′ = 0.02` into `sec^2 θ · θ′ = F{h′}{50}`, then multiply both sides by 50.'] },
+      { lead: 'Which sentence states the answer?', ok: 0, pick: [
+        ['The elevator is rising at 4 m/s.', '`h′ = 4` is positive, in meters per second.'],
+        ['The elevator is rising at 4 radians per second.', 'Radians measure the angle. The elevator’s height changes in meters per second.'],
+        ['The elevator is rising at 0.02 m/s.', '0.02 radians per second is the angle’s rate. The height’s rate is `h′ = 4` m/s.']] }] },
+
+  /* 14. (twin 8.7) check the form first: two 0/0 limits and one that is not indeterminate */
+  { id: 'm6', sec: 'sec-more', task: 'Check the form of each limit first. Then evaluate it.',
+    board: ['"(a)" lim{x→0} F{e^(4x) − 1}{tan x}', '"(b)" lim{x→3} F{ln(x − 2)}{x^2 − 9}', '"(c)" lim{x→0} F{cos x}{x + 1}'], teach: T_LH,
+    steps: [
+      { lead: '(a) Plug in `x = 0`. What form do you get?', ok: 0, pick: [
+        ['`F{0}{0}`', '`e^0 − 1 = 0` and `tan 0 = 0`. This form allows L’Hopital’s Rule.'],
+        ['`F{1}{0}`, so the limit does not exist', '`e^0 = 1`, so the top is `1 − 1 = 0`, not 1.'],
+        ['`F{4}{1}`', 'Those are the derivatives of the top and the bottom at 0. Plugging in gives the values first.']] },
+      { lead: 'Differentiate the top.', ask: 'Dx (e^(4x) − 1) =', ans: '4e^(4x)',
+        wrongs: [['e^(4x)', 'Multiply by the derivative of the inside, `4x`, which is 4.'],
+          ['4e^(4x) - 1', 'The constant `−1` has derivative 0.']],
+        hints: ['`Dx (e^(g(x))) = g′(x)e^(g(x))`, and a constant has derivative 0.'] },
+      { lead: 'Differentiate the bottom.', ask: 'Dx (tan x) =', ans: 'sec(x)^2',
+        wrongs: [['sec(x)tan(x)', 'That is the derivative of `sec x`. The derivative of `tan x` is `sec^2 x`.'],
+          ['sec(x)', 'Square the secant: the derivative of `tan x` is `sec^2 x`.']],
+        hints: ['Recall the derivatives of the trig functions, or write `tan x = F{sin x}{cos x}` and use the quotient rule.'] },
+      { lead: 'Use L’Hopital’s Rule.', ask: 'lim{x→0} F{e^(4x) − 1}{tan x} = lim{x→0} F{4e^(4x)}{sec^2 x} =', num: true, ans: '4',
+        wrongs: [[['1/4', '0.25'], 'That is upside down. The top gives `4e^0 = 4` and the bottom `sec^2 0 = 1`.'],
+          ['0', 'Plug into `F{4e^(4x)}{sec^2 x}`, not into the original. Its top is 4 at `x = 0`.']],
+        hints: ['Plug `x = 0` into `F{4e^(4x)}{sec^2 x}`. `sec 0 = F{1}{cos 0} = 1`.'] },
+      { lead: '(b) Plug in `x = 3`. What form do you get?', ok: 0, pick: [
+        ['`F{0}{0}`', '`ln(3 − 2) = ln 1 = 0` and `3^2 − 9 = 0`. This form allows L’Hopital’s Rule.'],
+        ['`F{1}{0}`, so the limit does not exist', '`ln 1 = 0`, not 1, so the top is 0.'],
+        ['`F{ln 1}{0}`, which has no value', '`ln 1 = 0`, so the form is `F{0}{0}`, which is indeterminate.']] },
+      { lead: 'Differentiate the top.', ask: 'Dx (ln(x − 2)) =', ans: '1/(x - 2)',
+        wrongs: [['1/x', 'Keep the inside: the derivative of `ln(x − 2)` is `F{1}{x − 2}` times the derivative of `x − 2`, which is 1.']],
+        hints: ['`Dx (ln g(x)) = F{g′(x)}{g(x)}`, with `g(x) = x − 2`.'] },
+      { lead: 'The bottom, `x^2 − 9`, has derivative `2x`. Use L’Hopital’s Rule.', ask: 'lim{x→3} F{ln(x − 2)}{x^2 − 9} =', num: true, ans: '1/6',
+        wrongs: [['6', 'That is upside down. The top gives `F{1}{3 − 2} = 1` and the bottom `2 · 3 = 6`.'],
+          [['1/3', '0.333'], 'The bottom’s derivative is `2x`, which is 6 at `x = 3`.']],
+        hints: ['Plug `x = 3` into `F{1/(x − 2)}{2x}`.'] },
+      { lead: '(c) Plug in `x = 0`. What form do you get?', ok: 0, pick: [
+        ['`F{1}{1}`, a number', '`cos 0 = 1` and `0 + 1 = 1`. The form is not indeterminate.'],
+        ['`F{0}{0}`', '`cos 0 = 1`, not 0, and the bottom is `0 + 1 = 1`.'],
+        ['`F{0}{1}`', '`cos 0 = 1`, not 0.']] },
+      { lead: 'Find the limit. L’Hopital’s Rule does not apply to this form.', ask: 'lim{x→0} F{cos x}{x + 1} =', num: true, ans: '1',
+        wrongs: [['0', 'That is what L’Hopital’s Rule would give, `F{−sin 0}{1}`. The rule does not apply, because the form is `F{1}{1}`.', ['#ex-p4', 'See Problem 4']]],
+        hints: ['Plug in `x = 0`: the top is `cos 0` and the bottom is `0 + 1`.'] }] },
+
+  /* 15. (twin 8.8) infinity over infinity, twice */
+  { id: 'm7', sec: 'sec-more', board: 'lim{x→∞} F{(ln x)^2}{x}', teach: T_LH,
+    steps: [
+      { lead: 'What form is this?', ok: 0, pick: [
+        ['`F{∞}{∞}`', 'The top and the bottom both grow without bound. This form allows L’Hopital’s Rule.'],
+        ['`F{∞}{∞} = 1`, so the limit is 1', '`F{∞}{∞}` is an indeterminate form. It can turn out to be any number, or `∞`.', ['#ex-p6', 'See Problem 6']],
+        ['`∞`, because `(ln x)^2` grows without bound', 'The bottom grows without bound too. Which one grows faster decides the limit.']] },
+      { lead: 'Apply L’Hopital’s Rule once.', ask: 'lim{x→∞} F{(ln x)^2}{x} = lim{x→∞}', ans: '2ln(x)/x',
+        wrongs: [['2ln(x)', 'The chain rule multiplies by the derivative of the inside, `ln x`, which is `F{1}{x}`.'],
+          ['2/x', 'That is the derivative of `ln(x^2) = 2ln x`. Here the whole logarithm is squared: `Dx ((ln x)^2) = 2ln x · F{1}{x}`.']],
+        hints: ['The top’s derivative is `2ln x` times the derivative of `ln x`. The bottom’s is 1.'] },
+      { lead: 'Check the form of `lim{x→∞} F{2ln x}{x}`.', ok: 0, pick: [
+        ['`F{∞}{∞}` again, so apply the rule again', 'Check the form before each use, as in Problem 6.'],
+        ['`F{∞}{∞} = 1`, so the limit is 1', '`F{∞}{∞}` is indeterminate. Apply the rule again.'],
+        ['The limit is 2', 'The 2 is a coefficient; the top `2ln x` still grows without bound.']] },
+      { lead: 'Apply L’Hopital’s Rule again.', ask: 'lim{x→∞} F{2ln x}{x} = lim{x→∞}', ans: '2/x',
+        wrongs: [['2', 'The derivative of `2ln x` is `F{2}{x}`, not 2.'],
+          ['2/x^2', 'The bottom `x` has derivative 1, so the new bottom is 1: `F{2/x}{1} = F{2}{x}`.']],
+        hints: ['The top’s derivative is `2 · F{1}{x}` and the bottom’s is 1.'] },
+      { ask: 'lim{x→∞} F{(ln x)^2}{x} =', num: true, ans: '0',
+        wrongs: [[INF, '`F{2}{x}` approaches 0 as `x` grows without bound.'],
+          ['2', 'The 2 is divided by `x`, which grows without bound.']],
+        hints: ['As `x → ∞`, what happens to `F{2}{x}`?'] }],
+    graph: { x: [0, 200], y: [0, 0.7], ticks: { x: 50, y: 0.2 }, fns: [{ f: function (x) { var l = Math.log(x); return l * l / x; }, domain: [1, 200], n: 400 }],
+      dots: [{ x: Math.exp(2), y: 4 / Math.exp(2), label: '(7.4, 0.54)', at: 'ne' }],
+      aria: 'The graph of (ln x) squared over x from x = 1 to 200: it rises to a peak of about 0.54 at x = 7.4, then falls slowly toward 0, to about 0.14 at x = 200.' },
+    after: 'The graph peaks near `x = 7.4` and then falls slowly toward 0: in the long run `x` grows faster than `(ln x)^2`.' },
+
+  /* 16. (twin 8.9) 0 · (−∞), rewritten as a quotient */
+  { id: 'm8', sec: 'sec-more', board: 'lim{x→0^+} x^2 ln x', teach: T_LH2,
+    steps: [
+      { lead: 'What form is this?', ok: 0, pick: [
+        ['`0 · (−∞)`', 'As `x → 0^+`, `x^2 → 0` and `ln x → −∞`. The two factors pull in opposite directions.'],
+        ['0, because anything times 0 is 0', '`x^2` approaches 0 but is never 0, and `ln x` grows without bound in size. The form `0 · (−∞)` is indeterminate.'],
+        ['`−∞`, because `ln x → −∞`', 'The factor `x^2` shrinks toward 0, which pulls the other way. The form `0 · (−∞)` is indeterminate.']] },
+      { lead: 'L’Hopital’s Rule works only on quotients. Keep `ln x` on top and move `x^2` to the bottom: `x^2 ln x = F{ln x}{?}`.', ask: '"bottom:"', ans: 'x^(-2)',
+        wrongs: [['x^2', 'Dividing by `x^2` is not the same as multiplying by `x^2`. Multiplying by `x^2` is dividing by `F{1}{x^2} = x^(−2)`.', ['#ex-p7', 'See Problem 7']],
+          ['1/x', 'That would give `x ln x`. Multiplying by `x^2` is dividing by `F{1}{x^2} = x^(−2)`.']],
+        hints: ['Multiplying by `x^2` is the same as dividing by its reciprocal.'],
+        why: 'Now the form is `F{−∞}{∞}`: `ln x → −∞` and `x^(−2) → ∞`.' },
+      { lead: 'The top’s derivative is `F{1}{x}`. Differentiate the bottom.', ask: 'Dx (x^(−2)) =', ans: '-2x^(-3)',
+        wrongs: [['-2x^(-1)', 'The power rule lowers the exponent by one: `−2 − 1 = −3`.'],
+          ['2x^(-3)', 'The exponent `−2` comes down as a factor, so the derivative is negative.']],
+        hints: ['The power rule: `Dx (x^n) = nx^(n − 1)`, with `n = −2`.'] },
+      { show: 'lim{x→0^+} F{ln x}{x^(−2)} = lim{x→0^+} F{1/x}{−2x^(−3)}' },
+      { lead: 'Simplify the fraction inside a fraction. Multiply the top by the reciprocal of the bottom.', ask: 'F{1/x}{−2x^(−3)} =', ans: '-x^2/2', form: FORM.noNest,
+        wrongs: [['-2/x^2', 'That is upside down. `F{1}{x} ÷ (−2x^(−3)) = F{1}{x} · F{x^3}{−2}`.'],
+          ['-1/(2x^4)', 'Dividing by `x^(−3)` multiplies by `x^3`: `F{1}{x} · F{x^3}{−2}`.'],
+          ['x^2/2', 'The bottom is negative, so the result is negative: `F{1}{x} · F{x^3}{−2} = −F{x^2}{2}`.']],
+        hints: ['`F{1}{x} · F{x^3}{−2}`. Combine the powers of `x`.'] },
+      { ask: 'lim{x→0^+} x^2 ln x =', num: true, ans: '0',
+        wrongs: [[NEGINF, '`−F{x^2}{2}` approaches `−F{0}{2} = 0` as `x → 0^+`.'],
+          ['-1/2', 'The `−F{1}{2}` multiplies `x^2`, which approaches 0.']],
+        hints: ['As `x → 0^+`, what does `−F{x^2}{2}` approach?'] }],
+    graph: { x: [0, 1.2], y: [-0.3, 0.3], ticks: { x: 0.2, y: 0.1 }, fns: [{ f: function (x) { return x * x * Math.log(x); }, domain: [0.002, 1.2], n: 400 }],
+      dots: [{ x: 0, y: 0, open: true, label: '(0, 0)', at: 'ne' }],
+      aria: 'The graph of x squared times ln x for x from 0 to 1.2: it dips to a low point of about −0.18 at x = 0.61, crosses zero at x = 1, and approaches the open circle at (0, 0) as x approaches 0 from the right.' },
+    after: 'As `x → 0^+`, the graph rises to height 0: the factor `x^2` wins.' },
+
+  /* 17. (value-add: Paul, L'Hospital's Rule, Problem 11) the form ∞^0, through a logarithm */
+  { id: 'm9', sec: 'sec-more', board: 'lim{x→∞} (e^x + x)^(1/x)', teach: T_LH4,
+    steps: [
+      { lead: 'What form is this?', ok: 0, pick: [
+        ['`∞^0`', 'The base grows without bound and the exponent `F{1}{x}` approaches 0. This is an indeterminate form.'],
+        ['`∞^0 = 1`, so the limit is 1', '`∞^0` is indeterminate: a huge base and a tiny exponent pull in opposite directions.'],
+        ['`∞`, because the base grows without bound', 'The exponent shrinks toward 0, which pulls the other way. The form is `∞^0`, which is indeterminate.']] },
+      { lead: 'Let `y = (e^x + x)^(1/x)`. Take `ln` of both sides and bring the exponent down.', ask: 'ln y =', ans: 'ln(e^x + x)/x', form: FORM.lnSplit,
+        wrongs: [['1/x + ln(e^x + x)', '`ln(A^n) = n ln A`: the exponent multiplies the logarithm.', ['#ex-p8', 'See Problem 8']],
+          ['1 + ln(x)/x', 'A logarithm does not split over a sum, so `ln(e^x + x)` stays whole. Only products, quotients and powers split.']],
+        hints: ['`ln(A^n) = n ln A`, with `A = e^x + x` and `n = F{1}{x}`.'] },
+      { lead: 'What form does `lim{x→∞} F{ln(e^x + x)}{x}` have?', ok: 0, pick: [
+        ['`F{∞}{∞}`', 'The top `ln(e^x + x)` and the bottom `x` both grow without bound.'],
+        ['`F{∞}{0}`', 'The bottom is `x`, which grows without bound as `x → ∞`.'],
+        ['`F{0}{∞}`', '`e^x + x` grows without bound, so its logarithm does too.']] },
+      { lead: 'Apply L’Hopital’s Rule.', ask: 'lim{x→∞} F{ln(e^x + x)}{x} = lim{x→∞}', ans: '(e^x + 1)/(e^x + x)',
+        wrongs: [['1/(e^x + x)', 'Multiply by the derivative of the inside, `e^x + x`, which is `e^x + 1`.'],
+          ['e^x/(e^x + x)', 'The derivative of the inside `e^x + x` is `e^x + 1`: the `x` contributes 1.']],
+        hints: ['`Dx (ln g(x)) = F{g′(x)}{g(x)}`, with `g(x) = e^x + x`. The bottom `x` has derivative 1.'] },
+      { lead: 'Check the form of `lim{x→∞} F{e^x + 1}{e^x + x}`.', ok: 0, pick: [
+        ['`F{∞}{∞}` again, so apply the rule again', 'Both `e^x + 1` and `e^x + x` grow without bound. Check the form before each use.'],
+        ['`F{1}{∞}`, so the limit is 0', '`e^x + 1` grows without bound too, not toward 1.'],
+        ['`F{∞}{1}`, so the limit is `∞`', '`e^x + x` grows without bound too.']] },
+      { lead: 'Apply L’Hopital’s Rule again.', ask: 'lim{x→∞} F{e^x + 1}{e^x + x} = lim{x→∞}', ans: 'e^x/(e^x + 1)',
+        wrongs: [['e^x/(e^x + x)', 'Differentiate the bottom too: `Dx (e^x + x) = e^x + 1`.'],
+          ['(e^x + 1)/(e^x + x)', 'That is the limit you start this step from. Differentiate its top, `e^x + 1`, and its bottom, `e^x + x`.']],
+        hints: ['The top’s derivative is `e^x` and the bottom’s is `e^x + 1`.'] },
+      { lead: 'Divide the top and the bottom of `F{e^x}{e^x + 1}` by `e^x`: it becomes `F{1}{1 + e^(−x)}`. Find the limit of `ln y`.', ask: 'lim{x→∞} ln y =', num: true, ans: '1',
+        wrongs: [['0', 'As `x → ∞`, `e^(−x) → 0`, so `F{1}{1 + e^(−x)} → F{1}{1 + 0} = 1`.'],
+          [INF, '`F{1}{1 + e^(−x)}` is never more than 1: the bottom is at least 1.']],
+        hints: ['As `x → ∞`, what does `e^(−x)` approach?'] },
+      { lead: 'So `ln y → 1`. Undo the logarithm.', ask: 'lim{x→∞} (e^x + x)^(1/x) =', num: true, ans: 'e',
+        wrongs: [['1', '1 is the limit of `ln y`. Since `y = e^(ln y)`, the limit of `y` is `e^1`.'],
+          [INF, 'The exponent `F{1}{x}` shrinks the huge base: `ln y → 1`, so `y → e^1`.']],
+        hints: ['`y = e^(ln y)`, and `e^x` is continuous.'] }],
+    graph: { x: [0, 8], y: [2.5, 4.5], ticks: { x: 2, y: 0.5 }, fns: [{ f: function (x) { return Math.pow(Math.exp(x) + x, 1 / x); }, domain: [0.6, 8], n: 400 }],
+      hlines: [{ y: Math.E, role: 'muted' }], texts: [{ x: 7, y: Math.E, text: 'y = e', at: 's' }],
+      aria: 'The graph of (e to the x plus x) to the power 1/x for x from 0.6 to 8: it falls from about 4.37 and levels off just above a dashed horizontal line at y = e, about 2.718, at about 2.719 when x = 8.' },
+    after: 'As `x → ∞`, the graph levels off at height `e ≈ 2.718`.' }
 ];
 
 /* PARENTHESIS SLIPS. Typing x+3/x+4 for (x + 3)/(x + 4) is the commonest typing slip, and the engine's "Reads as" line
@@ -3252,7 +3646,7 @@ function backHTML() {
 function page() {
   return header('Unit 8 Practice', SECTIONS_P.map(function (s) { return ['#' + s.id, s.nav || s.title]; }).concat([['#sec-back', 'Next']])) +
     '<main id="top">' + hero({ kicker: 'Calculus I · Unit 8: Related Rates and L’Hopital’s Rule', title: 'Unit 8 Practice',
-      dek: 'Use this page after you read Unit 8: Related Rates and L’Hopital’s Rule and Unit 8 Worked Examples. For each problem, choose the method, then type each line of the work. Each line is checked before the next one opens. Type a power with ⟦^⟧, as in ⟦x^2⟧ or ⟦e^(x/2)⟧, and put a whole top or bottom in parentheses, as in ⟦(x + 1)/(x − 2)⟧.' }) +
+      dek: 'Use this page after you read Unit 8: Related Rates and L’Hopital’s Rule and Unit 8 Worked Examples. For each problem, choose the method, then type each line of the work. Each line is checked before the next one opens. Problems 9 to 17, under More Practice, are optional. Type a power with ⟦^⟧, as in ⟦x^2⟧ or ⟦e^(x/2)⟧, and put a whole top or bottom in parentheses, as in ⟦(x + 1)/(x − 2)⟧.' }) +
     SECTIONS_P.map(sectionHTML).join('') + backHTML() + '</main>';
 }
 expose({ PROBLEMS: PROBLEMS, problemHTML: problemHTML, formProblem: formProblem, stepDone: stepDone });
@@ -3330,7 +3724,7 @@ selfcheck.add('the drawn setups show from the start, before any step is answered
     var h = renderWith(p, function () {});
     if (h.indexOf('id="pic-' + p.id + '"') < 0 || h.indexOf('<svg') < 0 || h.indexOf('aria-label="') < 0) bad.push(p.id);
   });
-  return bad.length ? { ok: false, detail: 'missing: ' + bad.join(', ') } : { ok: true, detail: '2 setups' };
+  return bad.length ? { ok: false, detail: 'missing: ' + bad.join(', ') } : { ok: true, detail: PROBLEMS.filter(function (p) { return p.pic; }).length + ' setups' };
 });
 
 selfcheck.add('right options are not all in one position', function () {
